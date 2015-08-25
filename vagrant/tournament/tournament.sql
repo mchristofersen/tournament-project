@@ -1,6 +1,9 @@
 -- Table definitions for the tournament project.
-
-DROP DATABASE IF EXISTS tournament;
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.datname = 'tournament'
+AND pid <> pg_backend_pid();
+DROP DATABASE tournament;
 CREATE DATABASE tournament;
 \c tournament;
 
@@ -30,8 +33,19 @@ CREATE TABLE players (name VARCHAR(100),
 
 -- The matches table is just for reference to find the winner of a particular
 -- match.
-CREATE TABLE matches (player1_id int,
-                      player2_id int,
-                      tournament_id int REFERENCES tournaments,
-                      draw boolean DEFAULT FALSE
+CREATE TABLE matches (
+    player1_id INTEGER REFERENCES players(player_id) ON DELETE CASCADE,
+    player2_id INTEGER REFERENCES players(player_id) ON DELETE CASCADE,
+    CHECK (player1_id <> player2_id),
+    tournament_id int REFERENCES tournaments,
+    draw boolean DEFAULT FALSE
                       );
+
+-- Creates a function to display player standings
+CREATE FUNCTION tournament_filter (x int, OUT player_id int, OUT name text,
+                          OUT points FLOAT, OUT matches_played int)
+RETURNS SETOF record AS $$
+    SELECT player_id, name, points, matches_played
+    FROM players WHERE tournament_id = $1
+    ORDER BY points DESC, name;
+$$ LANGUAGE SQL;

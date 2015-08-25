@@ -32,8 +32,7 @@ def set_tournament_id(t_id=0):
 
 
 def new_tournament(t_id):
-    pg = connect()
-    c = pg.cursor()
+    pg, c = connect()
     try:
         c.execute("INSERT INTO tournaments                                    \
                       VALUES ('GENERATED_TOURNAMENT', %s)", (t_id,))
@@ -48,12 +47,12 @@ def connect():
     """Connect to the PostgreSQL database.
     Returns a database connection."""
     pg = psycopg2.connect("dbname = tournament")
-    return pg
+    c = pg.cursor()
+    return pg, c
 
 
 def execute_query(query, variables=()):
-    pg = connect()
-    c = pg.cursor()
+    pg, c = connect()
     c.execute(query, variables)
     if re.match("(^INSERT|^UPDATE|^DELETE)", query, re.I) is not None:
         pg.commit()
@@ -110,9 +109,7 @@ def player_standings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    r_value = execute_query("SELECT player_id, name, points,matches_played \
-                            FROM players where tournament_id = %s \
-                            ORDER BY points DESC, opp_win, name",
+    r_value = execute_query("SELECT * FROM tournament_filter(%s)",
                             (tournament_id,))
     return r_value
 
@@ -149,6 +146,25 @@ def report_match(winner, loser, draw=False):
     execute_query("INSERT INTO matches VALUES (%s, %s, %s, %s)",
                   (winner, loser, tournament_id, draw))
 
+
+def pick_random_player(players):
+    """
+    Picks a player at random from the standings, checks that they haven't
+    already received a bye, and if not, assigns them a bye.
+    Returns an even list of players to be assigned pairings.
+    """
+    global bye_player
+    prev_bye = True
+    while prev_bye:
+        random.shuffle(players)
+        bye_player = players[0]
+        prev_bye = execute_query("Select bye from players\
+                                  WHERE player_id = %s",
+                                 (bye_player[0],))[0][0]
+    standings = player_standings()
+    standings.remove(bye_player)
+    assign_bye(bye_player[0])
+    return standings
  
 def swiss_pairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -167,19 +183,8 @@ def swiss_pairings():
     """
     standings = player_standings()
     pairings = []
-    global prev_bye
-    global bye_player
     if len(standings) % 2 != 0:
-        prev_bye = True
-        while prev_bye:
-            random.shuffle(standings)
-            bye_player = standings[0]
-            prev_bye = execute_query("Select bye from players\
-                                      WHERE player_id = %s",
-                                     (bye_player[0],))[0][0]
-        standings = player_standings()
-        standings.remove(bye_player)
-        assign_bye(bye_player[0])
+        pick_random_player(standings)
     while len(standings) > 1:
         idx = 1
         prev_opponents = execute_query("""SELECT prev_opponents from players

@@ -12,8 +12,8 @@ def testSetTournamentId():
 
 
 def testDatabaseConnection():
-    pg = connect()
-    if pg.cursor():
+    pg, c = connect()
+    if c:
         return
     else:
         print "Master: Connection Failure"
