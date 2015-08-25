@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/fullstack-nanodegree-vm.iml" filepath="$PROJECT_DIR$/.idea/fullstack-nanodegree-vm.iml" />
+      <module fileurl="file://$USER_HOME$/workspace/tournament-project/.idea/tournament-project.iml" filepath="$USER_HOME$/workspace/tournament-project/.idea/tournament-project.iml" />
     </modules>
   </component>
 </project>

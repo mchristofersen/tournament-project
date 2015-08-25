@@ -2,7 +2,8 @@ This repo can be used to track the results of a Swiss-draw style tournament
 
 First create a new database in PostgreSQL named "tournament"
 
-Then use setTournamentId() to generate a new tournament
+
+Then using tournament.py, use setTournamentId() to generate a new tournament
 
 Register new players with registerPlayer()
 
