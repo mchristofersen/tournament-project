@@ -2,7 +2,22 @@
 #
 # Test cases for tournament.py
 
+
 from tournament import *
+
+
+def testSetTournamentId():
+    if setTournamentId(4) == 4 and setTournamentId() == 0:
+        print "Master: Set tournament id"
+
+
+def testDatabaseConnection():
+    pg = connect()
+    if pg.cursor():
+        print "Master: Connection established"
+    else:
+        print "Master: Connection Failure"
+
 
 def testDeleteMatches():
     deleteMatches()
@@ -91,6 +106,7 @@ def testReportMatches():
     reportMatch(id1, id2)
     reportMatch(id3, id4)
     standings = playerStandings()
+    print standings
     for (i, n, w, m) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
@@ -126,6 +142,8 @@ def testPairings():
 
 
 if __name__ == '__main__':
+    testSetTournamentId()
+    testDatabaseConnection()
     testDeleteMatches()
     testDelete()
     testCount()
