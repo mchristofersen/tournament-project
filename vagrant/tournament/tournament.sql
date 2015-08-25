@@ -1,9 +1,13 @@
 -- Table definitions for the tournament project.
 
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+\c tournament;
+
 -- The tournaments table allows for the database to handle multiple
 -- tournaments.
 CREATE TABLE tournaments (tournament_name VARCHAR(200),
-                          tournament_id serial PRIMARY KEY
+                          tournament_id int PRIMARY KEY
                           );
 
 
@@ -13,13 +17,14 @@ CREATE TABLE tournaments (tournament_name VARCHAR(200),
 --                +0.0 for a loss
 -- players.opp_win is the average points of a players opponents faced so far
 -- it is only used for tie-breakers
+
 CREATE TABLE players (name VARCHAR(100),
                       points FLOAT DEFAULT 0.0,
                       matches_played int DEFAULT 0,
                       prev_opponents INT[],
                       bye boolean DEFAULT FALSE,
                       opp_win FLOAT,
-                      tournament_id int,
+                      tournament_id int REFERENCES tournaments,
                       player_id serial PRIMARY KEY
                       );
 
